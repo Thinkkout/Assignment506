@@ -1,0 +1,125 @@
+---
+title: "Assignment3"
+author: "Phanisa Butsiri"
+date: "2024-11-14"
+output: pdf_document
+---
+This R project is use to test for association between three SNPs like rs4244285 (CYP2C19*2),rs4986893 (CYP2C19*3) and Rs662 (PON1. 192Q>R) with ADP-induced platelet aggregation level. 
+
+```{r setup, include=FALSE}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(knitr)
+
+```
+Use read_tsv fuction for read data PlateletHW that in tsv type and assign to 'data' variable. Use '%>%" for forward the data to use in next line. I found outliers data in ADP column that show in negative values, then I decided to change negative values by take absolute to values use mutate fuction to select data in ADP columns and take absolute. Save data frame after change values as clean_data.tsv and save to clean_data folder. 
+
+```{r}
+data <- read_tsv("raw_data/PlateletHW.tsv")
+df <- data %>%
+  mutate(ADP_abs = abs(ADP))
+
+write_tsv(df, "clean_data/clean_data.tsv")
+```
+
+Call new data that cleaned as clean_data variable. Take log to values to nomalize data, prepare for ploting in linear graph.
+```{r}
+clean_data <- read_tsv("clean_data/clean_data.tsv")
+clean_data$ADP_log <- log(clean_data$ADP)
+```
+
+Compare each SNPs with ADP(log) in clean_data data frame.
+```{r}
+log_liner_A <- lm(ADP_log ~ rs4244285, data =clean_data)
+log_liner_B <- lm(ADP_log ~ rs4986893, data =clean_data)
+log_liner_C <- lm(ADP_log  ~ rs662, data =clean_data)
+```
+
+Call summary function to show data that will provide stat value for log_liner_A like Min, Med, Max,t-values.
+
+```{r}
+summary(log_liner_A)
+```
+
+Use ggplot to show the linear regression of rs4244285 and ADP(log) with function lm and assign color as "green", x axis as re4244285 and y axis as ADP. 
+
+```{r}
+ggplot(clean_data, aes(x = rs4244285, y = ADP_log)) +
+  geom_point() +
+  geom_smooth(method = "lm", color = "green") +
+  labs(title = "Association between ADP_log and rs4244285",
+       x = "rs4244285 Genotype (0, 1, 2)",
+       y = "ADP-Induced Platelet Aggregation")+theme_minimal()
+```
+From this graph, linear is going up, that mean 2 recessive gene, is the most induce platelet  aggregation level.
+
+
+
+Use qqnorm to plot the data to graph and qqline to plot line as blue color to graph. 
+
+
+```{r}
+qqnorm(log_liner_A$residuals)
+qqline(log_liner_A$residuals, col = "blue")
+```
+
+Call summary function for log_liner_B
+
+```{r}
+summary(log_liner_B)
+
+```
+From p-value equal to 0.0001115. That less than 0.05, so we reject null Hypothesis. Then rs4244285 is significant to induce platelet aggregation level.
+
+
+Use ggplot to show the linear regression of rs4986893 and ADP_log with function lm and assign color as "red, x axis as rs4986893 and y axis as ADP. 
+
+```{r}
+
+ggplot(clean_data, aes(x = rs4986893 , y = ADP_log)) +
+  geom_point() +
+  geom_smooth(method = "lm", color = "red") +
+  labs(title = "Association between ADP and rs4986893",
+       x = "rs4986893 Genotype (0, 1, 2)",
+       y = "ADP-Induced Platelet Aggregation") +theme_minimal()
+```
+From this graph, the linear is slightly going up, that mean the rs4986893 that have recessive gene can induce platelet  aggregation level than the normal one.
+
+
+
+Use qqnorm to plot the data to graph and qqline to plot line as violetred color to graph. 
+
+```{r}
+qqnorm(log_liner_B$residuals)
+qqline(log_liner_B$residuals, col = "violetred1")
+```
+
+
+Call summary function for log_liner_C
+
+```{r}
+summary(log_liner_C)
+```
+From p-value equal to -0.-4532. That more than 0.05, so we accept null Hypothesis. Then rs662 is not significant to induce platelet aggregation level.
+
+Use ggplot to show the linear regression of rs662 and ADP_log with function lm and assign color as "yellow", x axis as rs4986893 and y axis as ADP. 
+```{r}
+ggplot(clean_data, aes(x = rs662 , y = ADP_log)) +
+  geom_point() +
+  geom_smooth(method = "lm", color = "yellow") + 
+  labs(title = "Association between ADP and rs662",
+       x = "rs662 Genotype (0, 1, 2)",
+       y = "ADP-Induced Platelet Aggregation") +theme_minimal()
+```
+From this graph, linear is constant values, so no matter the rs662 have recessive gene or not. It will do not induce platelet  aggregation level.
+
+
+Use qqnorm to plot the data to graph and qqline to plot line as brown color to graph. 
+
+```{r}
+qqnorm(log_liner_C$residuals)
+qqline(log_liner_C$residuals, col = "brown")
+```
+
+
